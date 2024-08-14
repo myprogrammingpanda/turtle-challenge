@@ -6,28 +6,68 @@ const TurtleControls = () => {
     const [y, setY] = useState(0);
     const [direction, setDirection] = useState('NORTH');
     const [report, setReport] = useState('');
+    const [error, setError] = useState('');
 
     const handlePlace = async () => {
-        await axios.post('https://localhost:7045/api/turtle/place', null, {
-            params: { x, y, direction }
-        });
+        try {
+            setError(''); //
+            await axios.post('https://localhost:7045/api/turtle/place', null, {
+                params: { x, y, direction }
+            });
+            setReport(`Turtle placed at (${x}, ${y}) facing ${direction}`);
+        } catch (err) {
+            handleError(err);
+        }
     };
 
     const handleMove = async () => {
-        await axios.post('https://localhost:7045/api/turtle/move');
+        try {
+            setError(''); 
+            await axios.post('https://localhost:7045/api/turtle/move');
+            setReport('Turtle moved.');
+        } catch (err) {
+            handleError(err);
+        }
     };
 
     const handleLeft = async () => {
-        await axios.post('https://localhost:7045/api/turtle/left');
+        try {
+            setError(''); 
+            await axios.post('https://localhost:7045/api/turtle/left');
+            setReport('Turtle turned left.');
+        } catch (err) {
+            handleError(err);
+        }
     };
 
     const handleRight = async () => {
-        await axios.post('https://localhost:7045/api/turtle/right');
+        try {
+            setError('');
+            await axios.post('https://localhost:7045/api/turtle/right');
+            setReport('Turtle turned right.');
+        } catch (err) {
+            handleError(err);
+        }
     };
 
     const handleReport = async () => {
-        const response = await axios.get('https://localhost:7045/api/turtle/report');
-        setReport(`Position: (${response.data.x}, ${response.data.y}), Facing: ${response.data.facing}`);
+        try {
+            setError('');
+            const response = await axios.get('https://localhost:7045/api/turtle/report');
+            setReport(`Position: (${response.data.x}, ${response.data.y}), Facing: ${response.data.facing}`);
+        } catch (err) {
+            handleError(err);
+        }
+    };
+
+    const handleError = (err) => {
+        if (err.response) {
+            setError(`Error: ${err.response.data}`);
+        } else if (err.request) {
+            setError('Error: No response from server. Please try again later.');
+        } else {
+            setError(`Error: ${err.message}`);
+        }
     };
 
     return (
@@ -52,9 +92,8 @@ const TurtleControls = () => {
                 <button onClick={handleRight}>Right</button>
                 <button onClick={handleReport}>Report</button>
             </div>
-            <div>
-                <h3>{report}</h3>
-            </div>
+            {report && <div><h3>{report}</h3></div>}
+            {error && <div style={{ color: 'red' }}><h4>{error}</h4></div>}
         </div>
     );
 };
